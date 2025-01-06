@@ -21,7 +21,7 @@ hyperf 的 auth 组件，目前支持 jwt、session、sso 驱动。用户可以�
 ## 安装 - install
 
 ```bash
-$ composer require 96qbhy/hyperf-auth
+$ composer require imee/hyperf-auth
 ```
 
 > hyperf 1.1 请使用 ^v1.0 版本

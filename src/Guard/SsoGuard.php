@@ -1,14 +1,7 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of qbhy/hyperf-auth.
- *
- * @link     https://github.com/qbhy/hyperf-auth
- * @document https://github.com/qbhy/hyperf-auth/blob/master/README.md
- * @contact  qbhy0715@qq.com
- * @license  https://github.com/qbhy/hyperf-auth/blob/master/LICENSE
- */
+
 namespace Qbhy\HyperfAuth\Guard;
 
 use Hyperf\Context\Context;
@@ -18,6 +11,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Qbhy\HyperfAuth\Authenticatable;
 use Qbhy\HyperfAuth\Events\ForcedOfflineEvent;
 use Qbhy\HyperfAuth\UserProvider;
+
 use function Hyperf\Support\make;
 
 class SsoGuard extends JwtGuard
@@ -46,7 +40,7 @@ class SsoGuard extends JwtGuard
         return $this->config['clients'] ?? ['unknown'];
     }
 
-    public function login(Authenticatable $user, array $payload = [], string $client = null)
+    public function login(Authenticatable $user, array $payload = [], ?string $client = null)
     {
         $client = $client ?: $this->getClients()[0]; // 需要至少配置一个客户端
         $token = parent::login($user, $payload);
@@ -64,7 +58,7 @@ class SsoGuard extends JwtGuard
         return $token;
     }
 
-    public function refresh(?string $token = null, string $client = null): ?string
+    public function refresh(?string $token = null, ?string $client = null): ?string
     {
         $token = parent::refresh($token);
 

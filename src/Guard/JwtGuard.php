@@ -1,14 +1,7 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of qbhy/hyperf-auth.
- *
- * @link     https://github.com/qbhy/hyperf-auth
- * @document https://github.com/qbhy/hyperf-auth/blob/master/README.md
- * @contact  qbhy0715@qq.com
- * @license  https://github.com/qbhy/hyperf-auth/blob/master/LICENSE
- */
+
 namespace Qbhy\HyperfAuth\Guard;
 
 use Hyperf\Context\Context;
@@ -18,9 +11,12 @@ use Qbhy\HyperfAuth\Authenticatable;
 use Qbhy\HyperfAuth\Exception\AuthException;
 use Qbhy\HyperfAuth\Exception\UnauthorizedException;
 use Qbhy\HyperfAuth\UserProvider;
+use Qbhy\SimpleJwt\Exceptions\InvalidTokenException;
+use Qbhy\SimpleJwt\Exceptions\JWTException;
+use Qbhy\SimpleJwt\Exceptions\SignatureException;
 use Qbhy\SimpleJwt\Exceptions\TokenExpiredException;
 use Qbhy\SimpleJwt\JWTManager;
-use function Hyperf\Support\make;
+use Throwable;
 
 class JwtGuard extends AbstractAuthGuard
 {
@@ -74,7 +70,7 @@ class JwtGuard extends AbstractAuthGuard
     /**
      * 获取用于存到 context 的 key.
      *
-     * @param $token
+     * @param mixed $token
      * @return string
      */
     public function resultKey($token)
@@ -104,14 +100,9 @@ class JwtGuard extends AbstractAuthGuard
             }
 
             throw new UnauthorizedException('The token is required.', $this);
-        } catch (\Throwable $exception) {
-            $newException = $exception instanceof AuthException ? $exception : new UnauthorizedException(
-                $exception->getMessage(),
-                $this,
-                $exception
-            );
-            Context::set($key, $newException);
-            throw $newException;
+        } catch (Throwable $exception) {
+            Context::set($key, $exception);
+            throw $exception;
         }
     }
 
@@ -132,10 +123,10 @@ class JwtGuard extends AbstractAuthGuard
     /**
      * 刷新 token，旧 token 会失效.
      *
-     * @throws \Qbhy\SimpleJwt\Exceptions\InvalidTokenException
-     * @throws \Qbhy\SimpleJwt\Exceptions\JWTException
-     * @throws \Qbhy\SimpleJwt\Exceptions\SignatureException
-     * @throws \Qbhy\SimpleJwt\Exceptions\TokenExpiredException
+     * @throws InvalidTokenException
+     * @throws JWTException
+     * @throws SignatureException
+     * @throws TokenExpiredException
      */
     public function refresh(?string $token = null): ?string
     {
@@ -195,10 +186,10 @@ class JwtGuard extends AbstractAuthGuard
      * 获取 token 标识.
      * 为了性能，直接 md5.
      *
-     * @throws \Qbhy\SimpleJwt\Exceptions\SignatureException
-     * @throws \Qbhy\SimpleJwt\Exceptions\TokenExpiredException
-     * @throws \Qbhy\SimpleJwt\Exceptions\InvalidTokenException
      * @return mixed|string
+     * @throws SignatureException
+     * @throws TokenExpiredException
+     * @throws InvalidTokenException
      */
     protected function getJti(string $token): string
     {

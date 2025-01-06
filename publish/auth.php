@@ -1,16 +1,16 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of qbhy/hyperf-auth.
- *
- * @link     https://github.com/qbhy/hyperf-auth
- * @document https://github.com/qbhy/hyperf-auth/blob/master/README.md
- * @contact  qbhy0715@qq.com
- * @license  https://github.com/qbhy/hyperf-auth/blob/master/LICENSE
- */
+use App\Model\User;
+use Doctrine\Common\Cache\FilesystemCache;
+use Hyperf\Redis\Redis;
+use Qbhy\HyperfAuth\Guard\JwtGuard;
+use Qbhy\HyperfAuth\Guard\SessionGuard;
+use Qbhy\HyperfAuth\Guard\SsoGuard;
+use Qbhy\HyperfAuth\Provider\EloquentProvider;
 use Qbhy\SimpleJwt\Encoders;
 use Qbhy\SimpleJwt\EncryptAdapters as Encrypter;
+
 use function Hyperf\Support\env;
 use function Hyperf\Support\make;
 
@@ -26,13 +26,13 @@ return [
 
             // hyperf/redis 实例
             'redis' => function () {
-                return make(\Hyperf\Redis\Redis::class);
+                return make(Redis::class);
             },
 
             // 自定义 redis key，必须包含 {uid}，{uid} 会被替换成用户ID
             'redis_key' => 'u:token:{uid}',
 
-            'driver' => Qbhy\HyperfAuth\Guard\SsoGuard::class,
+            'driver' => SsoGuard::class,
             'provider' => 'users',
 
             /*
@@ -88,7 +88,7 @@ return [
              * 可选配置
              * 缓存类
              */
-            'cache' => new \Doctrine\Common\Cache\FilesystemCache(sys_get_temp_dir()),
+            'cache' => new FilesystemCache(sys_get_temp_dir()),
             // 如果需要分布式部署，请选择 redis 或者其他支持分布式的缓存驱动
             //            'cache' => function () {
             //                return make(\Qbhy\HyperfAuth\HyperfRedisCache::class);
@@ -101,7 +101,7 @@ return [
             'prefix' => env('SIMPLE_JWT_PREFIX', 'default'),
         ],
         'jwt' => [
-            'driver' => Qbhy\HyperfAuth\Guard\JwtGuard::class,
+            'driver' => JwtGuard::class,
             'provider' => 'users',
 
             /*
@@ -157,7 +157,7 @@ return [
              * 可选配置
              * 缓存类
              */
-            'cache' => new \Doctrine\Common\Cache\FilesystemCache(sys_get_temp_dir()),
+            'cache' => new FilesystemCache(sys_get_temp_dir()),
             // 如果需要分布式部署，请选择 redis 或者其他支持分布式的缓存驱动
             //            'cache' => function () {
             //                return make(\Qbhy\HyperfAuth\HyperfRedisCache::class);
@@ -170,14 +170,14 @@ return [
             'prefix' => env('SIMPLE_JWT_PREFIX', 'default'),
         ],
         'session' => [
-            'driver' => Qbhy\HyperfAuth\Guard\SessionGuard::class,
+            'driver' => SessionGuard::class,
             'provider' => 'users',
         ],
     ],
     'providers' => [
         'users' => [
-            'driver' => \Qbhy\HyperfAuth\Provider\EloquentProvider::class,
-            'model' => App\Model\User::class, // 需要实现 Qbhy\HyperfAuth\Authenticatable 接口
+            'driver' => EloquentProvider::class,
+            'model' => User::class, // 需要实现 Qbhy\HyperfAuth\Authenticatable 接口
         ],
     ],
 ];

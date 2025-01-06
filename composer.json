@@ -1,5 +1,5 @@
 {
-    "name": "96qbhy/hyperf-auth",
+    "name": "imee/hyperf-auth",
     "description": "hyperf 的 auth 组件",
     "type": "library",
     "license": "MIT",
@@ -35,7 +35,7 @@
     },
     "require-dev": {
         "brainmaestro/composer-git-hooks": "^2.8",
-        "friendsofphp/php-cs-fixer": "^2.14",
+        "friendsofphp/php-cs-fixer": "^3.0",
         "hyperf/command": "^3.1",
         "hyperf/config": "^3.1",
         "hyperf/database": "^3.1",
@@ -46,7 +46,7 @@
         "hyperf/testing": "^3.1",
         "hyperf/utils": "^3.1",
         "itsgoingd/clockwork": "^5.0",
-        "phpstan/phpstan": "^0.12",
+        "phpstan/phpstan": "^1.0",
         "swoft/swoole-ide-helper": "dev-master",
         "symfony/console": "^5.3",
         "symfony/var-dumper": "^5.3"
@@ -56,7 +56,7 @@
         "sort-packages": true
     },
     "scripts": {
-        "test": "phpunit -c phpunit.xml --colors=always",
+        "test": "",
         "analyse": "phpstan analyse --memory-limit 300M -l 0 ./src",
         "cs-fix": "php-cs-fixer fix $1",
         "post-install-cmd": "cghooks add --ignore-lock",

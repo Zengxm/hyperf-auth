@@ -1,14 +1,7 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of qbhy/hyperf-auth.
- *
- * @link     https://github.com/qbhy/hyperf-auth
- * @document https://github.com/qbhy/hyperf-auth/blob/master/README.md
- * @contact  qbhy0715@qq.com
- * @license  https://github.com/qbhy/hyperf-auth/blob/master/LICENSE
- */
+
 namespace Qbhy\HyperfAuth\Guard;
 
 use Hyperf\Context\Context;
@@ -17,6 +10,7 @@ use Qbhy\HyperfAuth\Authenticatable;
 use Qbhy\HyperfAuth\Exception\AuthException;
 use Qbhy\HyperfAuth\Exception\UnauthorizedException;
 use Qbhy\HyperfAuth\UserProvider;
+use Throwable;
 
 class SessionGuard extends AbstractAuthGuard
 {
@@ -49,7 +43,7 @@ class SessionGuard extends AbstractAuthGuard
     {
         if (Context::has($key = $this->resultKey())) {
             $result = Context::get($key);
-            if ($result instanceof \Throwable) {
+            if ($result instanceof Throwable) {
                 throw $result;
             }
             return $result ?: null;
@@ -62,7 +56,7 @@ class SessionGuard extends AbstractAuthGuard
                 return $user;
             }
             throw new UnauthorizedException('Unauthorized.', $this);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $newException = $exception instanceof AuthException ? $exception : new UnauthorizedException(
                 $exception->getMessage(),
                 $this,

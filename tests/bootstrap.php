@@ -1,24 +1,28 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of qbhy/hyperf-auth.
- *
- * @link     https://github.com/qbhy/hyperf-auth
- * @document https://github.com/qbhy/hyperf-auth/blob/master/README.md
- * @contact  qbhy0715@qq.com
- * @license  https://github.com/qbhy/hyperf-auth/blob/master/LICENSE
- */
 use Doctrine\Common\Cache\FilesystemCache;
+use Hyperf\Cache\Driver\FileSystemDriver;
+use Hyperf\Config\Config;
+use Hyperf\Context\ApplicationContext;
+use Hyperf\Contract\SessionInterface;
 use Hyperf\Di\Container;
 use Hyperf\Di\Definition\DefinitionSourceFactory;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\HttpServer\Request;
-use Hyperf\Context\ApplicationContext;
+use Hyperf\Redis\Redis;
+use Hyperf\Session\Handler\FileHandler;
+use Hyperf\Session\Session;
+use Hyperf\Support\Filesystem\Filesystem;
 use HyperfTest\DemoUser;
+use Psr\SimpleCache\CacheInterface;
+use Qbhy\HyperfAuth\AuthManager;
 use Qbhy\HyperfAuth\Guard\JwtGuard;
 use Qbhy\HyperfAuth\Guard\SessionGuard;
+use Qbhy\HyperfAuth\Guard\SsoGuard;
 use Qbhy\HyperfAuth\Provider\EloquentProvider;
+use Qbhy\SimpleJwt\EncryptAdapters\CryptEncrypter;
+
 use function Hyperf\Support\make;
 
 require_once dirname(dirname(__FILE__)) . '/vendor/autoload.php';
@@ -31,19 +35,19 @@ $container->define(RequestInterface::class, function () {
     return new Request();
 });
 
-$container->define(\Psr\SimpleCache\CacheInterface::class, function () use ($container) {
-    return new \Hyperf\Cache\Driver\FileSystemDriver($container, []);
+$container->define(CacheInterface::class, function () use ($container) {
+    return new FileSystemDriver($container, []);
 });
 
-$container->define(\Hyperf\Contract\SessionInterface::class, function () {
-    return new Hyperf\Session\Session('testing', new \Hyperf\Session\Handler\FileHandler(
-        new \Hyperf\Support\Filesystem\Filesystem(),
+$container->define(SessionInterface::class, function () {
+    return new Session('testing', new FileHandler(
+        new Filesystem(),
         BASE_PATH . '/runtime/testing',
         10
     ));
 });
 
-$container->define(\Qbhy\HyperfAuth\AuthManager::class, function () {
+$container->define(AuthManager::class, function () {
     $jwtConfig = [
         'driver' => JwtGuard::class, // guard 类名
         'secret' => 'test.secret',
@@ -53,11 +57,11 @@ $container->define(\Qbhy\HyperfAuth\AuthManager::class, function () {
          * 可选配置
          * 默认使用的加密类
          */
-        'default' => Qbhy\SimpleJwt\EncryptAdapters\CryptEncrypter::class,
+        'default' => CryptEncrypter::class,
         'cache' => new FilesystemCache(sys_get_temp_dir()), // 如果需要分布式部署，请选择 redis 或者其他支持分布式的缓存驱动
     ];
 
-    return new \Qbhy\HyperfAuth\AuthManager(new \Hyperf\Config\Config([
+    return new AuthManager(new Config([
         'auth' => [
             'default' => [
                 'guard' => 'jwt',
@@ -66,14 +70,14 @@ $container->define(\Qbhy\HyperfAuth\AuthManager::class, function () {
 
             'guards' => [
                 'sso' => array_merge($jwtConfig, [
-                    'driver' => \Qbhy\HyperfAuth\Guard\SsoGuard::class,
+                    'driver' => SsoGuard::class,
 
                     // 支持的设备，用英文逗号隔开
                     'clients' => ['pc', 'weapp'],
 
                     // hyperf/redis 实例
                     'redis' => function () {
-                        return make(\Hyperf\Redis\Redis::class);
+                        return make(Redis::class);
                     },
 
                     // 自定义 redis key，必须包含 {uid}，{uid} 会被替换成用户ID
